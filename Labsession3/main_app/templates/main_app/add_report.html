@@ -1,9 +1,22 @@
-<h2>Tambah Laporan</h2>
+<h2>Tambah / Edit Laporan</h2>
 
 <form method="POST">
     {% csrf_token %}
-    {{ form.as_p }}
+    
+    <label>Judul:</label><br>
+    {{ form.title }}<br><br>
+
+    <label>Kategori:</label><br>
+    {{ form.category }}<br><br>
+
+    <label>Deskripsi:</label><br>
+    {{ form.description }}<br><br>
+
+    <label>Lokasi:</label><br>
+    {{ form.location }}<br><br>
+
     <button type="submit">Simpan</button>
 </form>
 
-<a href="/">Kembali</a>
+<br>
+<a href="/reports/">Kembali</a>
