@@ -1,0 +1,36 @@
+<h1>Smart City - Laporan Masyarakat</h1>
+
+<a href="{% url 'add_report' %}">+ Tambah Laporan</a>
+
+<hr>
+
+{% for report in reports %}
+<div style="border:1px solid black; padding:10px; margin-bottom:10px;">
+    <h3>{{ report.title }}</h3>
+    <p>Kategori: {{ report.category }}</p>
+    <p>Status: {{ report.status }}</p>
+
+    <a href="{% url 'detail_report' report.pk %}">Detail</a> |
+    <a href="{% url 'edit_report' report.pk %}">Edit</a> |
+    <a href="{% url 'delete_report' report.pk %}">Hapus</a>
+
+    <br><br>
+
+    <form method="POST" action="{% url 'update_status' report.pk %}">
+        {% csrf_token %}
+
+        {% if report.status == 'REPORTED' %}
+            <button name="status" value="VERIFIED">Verifikasi</button>
+
+        {% elif report.status == 'VERIFIED' %}
+            <button name="status" value="IN_PROGRESS">Proses</button>
+
+        {% elif report.status == 'IN_PROGRESS' %}
+            <button name="status" value="RESOLVED">Selesai</button>
+        {% endif %}
+    </form>
+
+</div>
+{% empty %}
+<p>Tidak ada laporan</p>
+{% endfor %}
