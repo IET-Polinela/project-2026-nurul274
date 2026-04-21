@@ -1,9 +1,23 @@
-<h1>Tambah Laporan</h1>
+{% extends 'base.html' %}
 
-<form method="POST">
+{% block content %}
+
+<nav class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item active">Tambah Laporan</li>
+  </ol>
+</nav>
+
+<h2>Tambah Laporan</h2>
+
+<form method="post"
+onsubmit="this.querySelector('button').innerText='Loading...'; this.querySelector('button').disabled=true;">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Simpan</button>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a href="/" class="btn btn-secondary">Kembali</a>
 </form>
 
-<a href="{% url 'home' %}">Kembali</a>
+{% endblock %}

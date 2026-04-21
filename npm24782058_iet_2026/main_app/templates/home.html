@@ -1,36 +1,96 @@
-<h1>Smart City - Laporan Masyarakat</h1>
+{% extends 'base.html' %}
 
-<a href="{% url 'add_report' %}">+ Tambah Laporan</a>
+{% block content %}
 
-<hr>
+<nav class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active">Home</li>
+  </ol>
+</nav>
 
-{% for report in reports %}
-<div style="border:1px solid black; padding:10px; margin-bottom:10px;">
-    <h3>{{ report.title }}</h3>
-    <p>Kategori: {{ report.category }}</p>
-    <p>Status: {{ report.status }}</p>
+<h2>Daftar Laporan</h2>
 
-    <a href="{% url 'detail_report' report.pk %}">Detail</a> |
-    <a href="{% url 'edit_report' report.pk %}">Edit</a> |
-    <a href="{% url 'delete_report' report.pk %}">Hapus</a>
+<a href="{% url 'add_report' %}" class="btn btn-primary mb-3">+ Tambah Laporan</a>
 
-    <br><br>
+{% if reports %}
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Judul</th>
+            <th>Lokasi</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.title }}</td>
+            <td>{{ report.location }}</td>
 
-    <form method="POST" action="{% url 'update_status' report.pk %}">
-        {% csrf_token %}
+            <td>
+                {% if report.status == 'REPORTED' %}
+                    <span class="badge bg-secondary">Reported</span>
+                {% elif report.status == 'VERIFIED' %}
+                    <span class="badge bg-info">Verified</span>
+                {% elif report.status == 'IN_PROGRESS' %}
+                    <span class="badge bg-warning">In Progress</span>
+                {% elif report.status == 'RESOLVED' %}
+                    <span class="badge bg-success">Resolved</span>
+                {% endif %}
+            </td>
 
-        {% if report.status == 'REPORTED' %}
-            <button name="status" value="VERIFIED">Verifikasi</button>
+            <td>
+                <a href="{% url 'detail_report' report.pk %}" class="btn btn-info btn-sm">Detail</a>
+                <a href="{% url 'edit_report' report.pk %}" class="btn btn-warning btn-sm">Edit</a>
 
-        {% elif report.status == 'VERIFIED' %}
-            <button name="status" value="IN_PROGRESS">Proses</button>
+                <a href="{% url 'delete_report' report.pk %}" 
+                   class="btn btn-danger btn-sm"
+                   onclick="return confirm('Yakin hapus?')">Delete</a>
 
-        {% elif report.status == 'IN_PROGRESS' %}
-            <button name="status" value="RESOLVED">Selesai</button>
-        {% endif %}
-    </form>
+                <!-- STATUS BUTTON -->
+                {% if report.status == 'REPORTED' %}
+                <form method="post" action="{% url 'update_status' report.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="VERIFIED">
+                    <button type="submit" class="btn btn-secondary btn-sm"
+                        onclick="return confirm('Yakin ubah status ke VERIFIED?')">
+                        Verify
+                    </button>
+                </form>
 
+                {% elif report.status == 'VERIFIED' %}
+                <form method="post" action="{% url 'update_status' report.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="IN_PROGRESS">
+                    <button type="submit" class="btn btn-info btn-sm"
+                        onclick="return confirm('Yakin ubah status ke IN PROGRESS?')">
+                        Start
+                    </button>
+                </form>
+
+                {% elif report.status == 'IN_PROGRESS' %}
+                <form method="post" action="{% url 'update_status' report.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="RESOLVED">
+                    <button type="submit" class="btn btn-success btn-sm"
+                        onclick="return confirm('Yakin ubah status ke RESOLVED?')">
+                        Resolve
+                    </button>
+                </form>
+                {% endif %}
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<div class="alert alert-info text-center">
+    Belum ada laporan <br><br>
+    <a href="{% url 'add_report' %}" class="btn btn-primary">Tambah Laporan</a>
 </div>
-{% empty %}
-<p>Tidak ada laporan</p>
-{% endfor %}
+{% endif %}
+
+{% endblock %}

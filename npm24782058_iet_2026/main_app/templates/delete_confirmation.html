@@ -2,16 +2,7 @@
 
 {% block content %}
 
-<nav class="mb-3">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="/">Home</a></li>
-    <li class="breadcrumb-item active">Hapus Laporan</li>
-  </ol>
-</nav>
-
 <h3>Yakin ingin menghapus?</h3>
-
-<p>"{{ object.title }}"</p>
 
 <form method="post">
     {% csrf_token %}

@@ -1,9 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<nav class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item active">Detail Laporan</li>
+  </ol>
+</nav>
+
 <h2>Detail Laporan</h2>
 
-<p>{{ object.title }}</p>
-<p>{{ object.category }}</p>
-<p>{{ object.location }}</p>
-<p>{{ object.description }}</p>
-<p>Status: {{ object.status }}</p>
+<ul class="list-group">
+    <li class="list-group-item"><strong>Judul:</strong> {{ object.title }}</li>
+    <li class="list-group-item"><strong>Kategori:</strong> {{ object.category }}</li>
+    <li class="list-group-item"><strong>Lokasi:</strong> {{ object.location }}</li>
+    <li class="list-group-item"><strong>Deskripsi:</strong> {{ object.description }}</li>
+    <li class="list-group-item">
+        <strong>Status:</strong> 
+        {% if object.status == 'REPORTED' %}
+            <span class="badge bg-secondary">Reported</span>
+        {% elif object.status == 'VERIFIED' %}
+            <span class="badge bg-info">Verified</span>
+        {% elif object.status == 'IN_PROGRESS' %}
+            <span class="badge bg-warning">In Progress</span>
+        {% elif object.status == 'RESOLVED' %}
+            <span class="badge bg-success">Resolved</span>
+        {% endif %}
+    </li>
+</ul>
 
-<a href="{% url 'home' %}">Kembali</a>
+<br>
+<a href="/" class="btn btn-secondary">Kembali</a>
+
+{% endblock %}
