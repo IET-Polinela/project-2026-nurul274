@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<h3>Yakin hapus laporan ini?</h3>
 
-<h3>Yakin ingin menghapus?</h3>
+<p><b>{{ object.title }}</b></p>
 
 <form method="post">
     {% csrf_token %}
