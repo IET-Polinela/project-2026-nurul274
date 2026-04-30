@@ -37,11 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'usermanagement_24782058',
+    'dashboard_24782058',
 
   
-
     'main_app',
     'about',
     'contacts',
