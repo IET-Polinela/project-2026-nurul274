@@ -15,14 +15,15 @@ class ReportListView(ListView):
     context_object_name = 'reports'
 
     def get_queryset(self):
-        # admin lihat semua
+
+        # admin lihat semua kecuali draft
         if self.request.user.is_authenticated and self.request.user.is_admin:
-            return Report.objects.all()
-        
+            return Report.objects.exclude(status='DRAFT')
+
         # user biasa lihat miliknya saja
         if self.request.user.is_authenticated:
-            return Report.objects.filter(user=self.request.user)
-        
+            return Report.objects.filter(reporter=self.request.user)
+
         return Report.objects.none()
 
 
@@ -40,15 +41,21 @@ class ReportCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('home')
 
     def dispatch(self, request, *args, **kwargs):
+
         # admin tidak boleh create
         if request.user.is_admin:
             messages.error(request, "Admin tidak boleh membuat laporan!")
             return redirect('home')
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+
+        form.instance.reporter = self.request.user
+        form.instance.status = 'DRAFT'
+
         messages.success(self.request, "Laporan berhasil ditambahkan!")
+
         return super().form_valid(form)
 
 
@@ -60,10 +67,11 @@ class ReportUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('home')
 
     def dispatch(self, request, *args, **kwargs):
+
         obj = self.get_object()
 
         # hanya pemilik laporan
-        if obj.user != request.user:
+        if obj.reporter != request.user:
             messages.error(request, "Anda tidak punya akses!")
             return redirect('home')
 
@@ -72,10 +80,17 @@ class ReportUpdateView(LoginRequiredMixin, UpdateView):
             messages.error(request, "Admin tidak boleh edit laporan!")
             return redirect('home')
 
+        # hanya draft yang boleh diedit
+        if obj.status != 'DRAFT':
+            messages.error(request, "Laporan yang sudah dikirim tidak bisa diedit!")
+            return redirect('home')
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+
         messages.success(self.request, "Laporan berhasil diupdate!")
+
         return super().form_valid(form)
 
 
@@ -86,21 +101,24 @@ class ReportDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('home')
 
     def dispatch(self, request, *args, **kwargs):
+
         obj = self.get_object()
 
         # boleh jika admin ATAU pemilik
-        if not request.user.is_admin and obj.user != request.user:
+        if not request.user.is_admin and obj.reporter != request.user:
             messages.error(request, "Tidak bisa hapus laporan orang lain!")
             return redirect('home')
 
         return super().dispatch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
+
         messages.success(self.request, "Laporan berhasil dihapus!")
+
         return super().delete(request, *args, **kwargs)
 
 
-# UPDATE STATUS (ADMIN ONLY)
+# UPDATE STATUS
 class ReportUpdateStatusView(View):
 
     def post(self, request, pk):
@@ -110,24 +128,46 @@ class ReportUpdateStatusView(View):
             messages.error(request, "Silakan login terlebih dahulu!")
             return redirect('login')
 
-        # bukan admin
-        if not request.user.is_admin:
-            messages.error(request, "Akses ditolak! Hanya admin yang bisa verifikasi.")
-            return redirect('home')
-
         report = get_object_or_404(Report, pk=pk)
         new_status = request.POST.get('status')
 
+        # USER BIASA HANYA BOLEH KIRIM DRAFT
+        if not request.user.is_admin:
+
+            if (
+                report.reporter == request.user and
+                report.status == 'DRAFT' and
+                new_status == 'REPORTED'
+            ):
+
+                report.status = 'REPORTED'
+                report.save()
+
+                messages.success(request, "Laporan berhasil dikirim!")
+
+                return redirect('home')
+
+            messages.error(request, "Akses ditolak!")
+
+            return redirect('home')
+
+        # KHUSUS ADMIN
         valid_transitions = {
             'REPORTED': 'VERIFIED',
             'VERIFIED': 'IN_PROGRESS',
             'IN_PROGRESS': 'RESOLVED'
         }
 
-        if report.status in valid_transitions and valid_transitions[report.status] == new_status:
+        if (
+            report.status in valid_transitions and
+            valid_transitions[report.status] == new_status
+        ):
+
             report.status = new_status
             report.save()
+
             messages.success(request, "Status berhasil diupdate!")
+
         else:
             messages.error(request, "Perubahan status tidak valid!")
 

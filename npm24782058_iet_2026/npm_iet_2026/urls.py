@@ -23,5 +23,6 @@ urlpatterns = [
     path('', include('usermanagement_24782058.urls')),  
 
     path('', include('main_app.urls')), 
-     path('dashboard/', include('dashboard_24782058.urls')), 
+    path('dashboard/', include('dashboard_24782058.urls')), 
+    path('api/', include('main_app.api_urls')),
 ]
