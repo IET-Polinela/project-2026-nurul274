@@ -2,12 +2,21 @@ from rest_framework import serializers
 from .models import Report
 
 
-class ReportSerializer(serializers.ModelSerializer):
-    reporter = serializers.SerializerMethodField()
+class ReportSerializer(
+    serializers.ModelSerializer
+):
+
+    reporter = serializers.SerializerMethodField(
+        read_only=True
+    )
+
 
     class Meta:
+
         model = Report
+
         fields = [
+
             'id',
             'title',
             'category',
@@ -17,7 +26,39 @@ class ReportSerializer(serializers.ModelSerializer):
             'reporter',
             'created_at',
             'updated_at',
+
         ]
 
-    def get_reporter(self, obj):
-        return "Warga Anonim"
+        read_only_fields = [
+
+            'reporter',
+            'created_at',
+            'updated_at',
+
+        ]
+
+
+    def get_reporter(
+        self,
+        obj
+    ):
+
+        request = self.context.get(
+            'request'
+        )
+
+
+        if (
+
+            request
+
+            and
+
+            request.user.is_staff
+
+        ):
+
+            return None
+
+
+        return obj.reporter.username
