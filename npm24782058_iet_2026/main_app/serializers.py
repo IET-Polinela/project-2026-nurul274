@@ -25,7 +25,7 @@ class ReportSerializer(
             'status',
             'reporter',
             'created_at',
-            'updated_at',
+            'updated_at'
 
         ]
 
@@ -33,7 +33,7 @@ class ReportSerializer(
 
             'reporter',
             'created_at',
-            'updated_at',
+            'updated_at'
 
         ]
 
@@ -43,22 +43,4 @@ class ReportSerializer(
         obj
     ):
 
-        request = self.context.get(
-            'request'
-        )
-
-
-        if (
-
-            request
-
-            and
-
-            request.user.is_staff
-
-        ):
-
-            return None
-
-
-        return obj.reporter.username
+        return "Warga Anonim"

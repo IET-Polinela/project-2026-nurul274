@@ -5,12 +5,12 @@ from rest_framework import (
     generics
 )
 
-from django.contrib.auth import (
-    get_user_model
-)
-
 from rest_framework.exceptions import (
     PermissionDenied
+)
+
+from django.contrib.auth import (
+    get_user_model
 )
 
 User = get_user_model()
@@ -93,7 +93,7 @@ class ReportViewSet(
             return Report.objects.none()
 
 
-        # admin hanya lihat non draft
+        # ADMIN hanya lihat non draft
         if user.is_staff:
 
             return Report.objects.exclude(
@@ -102,7 +102,7 @@ class ReportViewSet(
 
 
         # citizen:
-        # non draft + draft milik sendiri
+        # non draft + draft miliknya
         return (
 
             Report.objects.exclude(
@@ -121,47 +121,68 @@ class ReportViewSet(
 
     def get_permissions(self):
 
-        # semua endpoint wajib login
-        if not (
-            self.request.user
+        # wajib login
+        if not self.request.user.is_authenticated:
+
+            return [
+                permissions.IsAuthenticated()
+            ]
+
+
+        # ADMIN DILARANG CREATE
+        if (
+
+            self.action == 'create'
+
             and
-            self.request.user.is_authenticated
+
+            self.request.user.is_staff
+
         ):
 
-            return [
-                permissions.IsAuthenticated()
+            raise PermissionDenied(
+                'Admin tidak boleh membuat laporan'
+            )
+
+
+        # ADMIN DILARANG UPDATE
+        if (
+
+            self.action in [
+
+                'update',
+
+                'partial_update'
+
             ]
 
+            and
 
-        # list detail
-        if self.action in [
+            self.request.user.is_staff
 
-            'list',
+        ):
 
-            'retrieve'
-
-        ]:
-
-            return [
-                permissions.IsAuthenticated()
-            ]
+            raise PermissionDenied(
+                'Admin tidak boleh edit laporan'
+            )
 
 
-        # create hanya citizen
-        if self.action == 'create':
+        # ADMIN DILARANG DELETE
+        if (
 
-            if self.request.user.is_staff:
+            self.action == 'destroy'
 
-                raise PermissionDenied(
-                    'Admin tidak boleh membuat laporan'
-                )
+            and
 
-            return [
-                permissions.IsAuthenticated()
-            ]
+            self.request.user.is_staff
+
+        ):
+
+            raise PermissionDenied(
+                'Admin tidak boleh hapus laporan'
+            )
 
 
-        # update delete
         if self.action in [
 
             'update',
@@ -171,13 +192,6 @@ class ReportViewSet(
             'destroy'
 
         ]:
-
-            # admin tidak boleh edit delete
-            if self.request.user.is_staff:
-
-                raise PermissionDenied(
-                    'Admin tidak boleh edit atau hapus laporan'
-                )
 
             return [
 
@@ -201,5 +215,7 @@ class ReportViewSet(
     ):
 
         serializer.save(
+
             reporter=self.request.user
+
         )

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'dashboard_24782058',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
     
     'main_app',
     'about',
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'npm_iet_2026.urls'
@@ -144,3 +146,4 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 }
+CORS_ALLOW_ALL_ORIGINS = True
