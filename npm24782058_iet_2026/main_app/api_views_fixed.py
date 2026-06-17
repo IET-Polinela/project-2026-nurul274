@@ -2,9 +2,12 @@ from rest_framework import (
     permissions,
     viewsets,
     serializers,
-    generics
+    generics,
+    status as http_status
 )
 
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.exceptions import (
     PermissionDenied
 )
@@ -83,6 +86,49 @@ class RegisterView(
             ]
 
         )
+
+
+# =================================
+# PROFILE
+# =================================
+
+class UserProfileSerializer(
+    serializers.ModelSerializer
+):
+
+    class Meta:
+
+        model = User
+
+        fields = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name'
+        ]
+
+        read_only_fields = [
+            'id',
+            'username'
+        ]
+
+
+class ProfileView(
+    generics.RetrieveUpdateAPIView
+):
+
+    serializer_class = (
+        UserProfileSerializer
+    )
+
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+    def get_object(self):
+
+        return self.request.user
 
 
 # =================================
@@ -235,4 +281,91 @@ class ReportViewSet(
                 'DRAFT'
             )
 
+        )
+
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[
+            permissions.IsAuthenticated
+        ]
+    )
+    def update_status(
+        self,
+        request,
+        pk=None
+    ):
+
+        report = self.get_object()
+
+        new_status = request.data.get(
+            'status'
+        )
+
+        if not new_status:
+
+            return Response(
+                {
+                    'error': 'Status field required'
+                },
+                status=http_status.HTTP_400_BAD_REQUEST
+            )
+
+        # USER BIASA HANYA BOLEH KIRIM DRAFT
+        if not request.user.is_staff:
+
+            if (
+                report.reporter == request.user and
+                report.status == 'DRAFT' and
+                new_status == 'REPORTED'
+            ):
+
+                report.status = 'REPORTED'
+                report.save()
+
+                serializer = self.get_serializer(
+                    report
+                )
+
+                return Response(
+                    serializer.data,
+                    status=http_status.HTTP_200_OK
+                )
+
+            return Response(
+                {
+                    'error': 'Akses ditolak'
+                },
+                status=http_status.HTTP_403_FORBIDDEN
+            )
+
+        # KHUSUS ADMIN
+        valid_transitions = {
+            'REPORTED': 'VERIFIED',
+            'VERIFIED': 'IN_PROGRESS',
+            'IN_PROGRESS': 'RESOLVED'
+        }
+
+        if (
+            report.status in valid_transitions and
+            valid_transitions[report.status] == new_status
+        ):
+
+            report.status = new_status
+            report.save()
+
+            serializer = self.get_serializer(
+                report
+            )
+
+            return Response(
+                serializer.data,
+                status=http_status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                'error': 'Status transition tidak valid'
+            },
+            status=http_status.HTTP_400_BAD_REQUEST
         )
