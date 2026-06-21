@@ -9,15 +9,7 @@ class ReportSerializer(
         read_only=True
     )
 
-    is_owner = serializers.SerializerMethodField( 
-        read_only=True 
-    )
-
-    is_admin = serializers.SerializerMethodField(
-        read_only=True
-    )
-    
-    report_time = serializers.SerializerMethodField(
+    is_owner = serializers.SerializerMethodField(
         read_only=True
     )
 
@@ -34,12 +26,9 @@ class ReportSerializer(
             'location',
             'status',
             'reporter',
-            'report_time',
             'created_at',
             'updated_at',
-            'is_owner',
-            'is_admin'
-            
+            'is_owner'
 
         ]
 
@@ -48,9 +37,7 @@ class ReportSerializer(
             'reporter',
             'created_at',
             'updated_at',
-            'is_owner',
-            'is_admin',
-            'report_time'
+            'is_owner'
 
         ]
 
@@ -82,10 +69,11 @@ class ReportSerializer(
         self,
         obj
     ):
+
         request = self.context.get(
             'request'
         )
-        
+
         # Memeriksa apakah request ada dan user sudah login
         if (
             request and
@@ -94,37 +82,9 @@ class ReportSerializer(
         ):
 
             # Membandingkan reporter objek dengan user yang sedang login
-            return obj.reporter == request.user
-        
-        return False
-
-
-    def get_is_admin(
-        self,
-        obj
-    ):
-        request = self.context.get(
-            'request'
-        )
-        
-        # Memeriksa apakah user adalah admin/staff
-        if (
-            request and
-            request.user and
-            request.user.is_authenticated
-        ):
-
             return (
-                request.user.is_staff or
-                request.user.is_superuser
+                obj.reporter ==
+                request.user
             )
-        
+
         return False
-
-
-    def get_report_time(
-        self,
-        obj
-    ):
-        # Return created_at dalam format ISO
-        return obj.created_at.isoformat()

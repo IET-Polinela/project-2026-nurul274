@@ -61,74 +61,134 @@ const routes = {
     `,
 
     '#dashboard': `
-        <h3>Dashboard Warga</h3>
+<h3>Dashboard Warga</h3>
 
-        <div class="row g-4 mt-2">
+<div class="row g-4 mt-2">
 
-            <div class="col-md-6">
-                <div class="card bg-primary text-white p-4 shadow-sm">
-                    <h6>Total Laporan Anda</h6>
-                    <h3 id="totalReport">0</h3>
-                </div>
+    <div class="col-md-6">
+        <div class="card bg-primary text-white p-4 shadow-sm">
+            <h6>Total Laporan Anda</h6>
+            <h3 id="totalReport">0</h3>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card bg-success text-white p-4 shadow-sm">
+            <h6>Laporan Selesai</h6>
+            <h3 id="resolvedReport">0</h3>
+        </div>
+    </div>
+
+</div>
+
+<div class="card mt-4 shadow-sm p-4">
+
+    <h5>Statistik Status Laporan</h5>
+
+    <canvas id="reportChart"></canvas>
+
+</div>
+`,
+
+'#laporan': `
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                📋 Laporan Warga
+            </h2>
+
+            <p class="text-muted">
+                Kelola laporan, draft, dan feed publik
+            </p>
+        </div>
+
+        <button
+            class="btn btn-primary shadow"
+            onclick="openReportModal()">
+
+            <i class="bi bi-plus-circle me-2"></i>
+            Tambah Laporan
+
+        </button>
+
+    </div>
+
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm p-3 report-menu"
+                onclick="loadPublicFeed()"
+                style="cursor:pointer">
+
+                <h5>📢 Feed Publik</h5>
+
+                <small class="text-muted">
+                    Semua laporan warga
+                </small>
+
             </div>
 
-            <div class="col-md-6">
-                <div class="card bg-success text-white p-4 shadow-sm">
-                    <h6>Laporan Selesai</h6>
-                    <h3 id="resolvedReport">0</h3>
-                </div>
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm p-3 report-menu"
+                onclick="loadSubmittedReports()"
+                style="cursor:pointer">
+
+                <h5>📄 Laporan Saya</h5>
+
+                <small class="text-muted">
+                    Laporan yang telah dikirim
+                </small>
+
             </div>
 
         </div>
 
-        <div class="card mt-4 shadow-sm p-4">
-            <h5>Monitoring Laporan</h5>
 
-            <div id="latestReports">
-                Memuat data...
+        <div class="col-md-4">
+
+            <div class="card shadow-sm p-3 report-menu"
+                onclick="loadDraftReports()"
+                style="cursor:pointer">
+
+                <h5>📝 Draft Saya</h5>
+
+                <small class="text-muted">
+                    Draft yang belum dikirim
+                </small>
+
             </div>
-        </div>
-    `,
 
-    '#laporan': `
-        <h3>Laporan</h3>
-
-        <div class="mb-3">
-            <button class="btn btn-primary"
-                onclick="openReportModal()">
-                Tambah Laporan
-            </button>
         </div>
 
-        <ul class="nav nav-tabs">
-            <li class="nav-item">
-                <button class="nav-link active"
-                    onclick="loadPublicFeed()">
-                    Feed Publik
-                </button>
-            </li>
+    </div>
 
-            <li class="nav-item">
-                <button class="nav-link"
-                    onclick="loadMyReports()">
-                    Laporan Saya
-                </button>
-            </li>
-        </ul>
-
-        <div id="reportContainer"
-            class="mt-3">
-        </div>
-    `,
+    <div
+        id="reportContainer"
+        class="mt-3">
+    </div>
+`,
 
     '#profil': `
-        <h3>Profil</h3>
 
-        <div id="profileContainer"
-            class="card p-4 shadow-sm">
-            Memuat profil...
-        </div>
+    <h3 class="mb-4">
+        👤 Profil Saya
+    </h3>
+
+    <div
+        id="profileContainer"
+        class="card shadow-sm p-4 ">
+
+        memuat data profil...
+    </div>
     `
+        
 };
 
 function handleRouting() {

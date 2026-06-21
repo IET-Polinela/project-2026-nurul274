@@ -4,9 +4,15 @@ from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+import json
+from django.http import JsonResponse
 from .models import Report
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 
 # LIST (ADMIN vs USER)
 class ReportListView(ListView):
@@ -119,56 +125,89 @@ class ReportDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # UPDATE STATUS
-class ReportUpdateStatusView(View):
+class ReportUpdateStatusView(APIView):
+
+    permission_classes = [
+        IsAuthenticated
+    ]
 
     def post(self, request, pk):
 
-        # belum login
-        if not request.user.is_authenticated:
-            messages.error(request, "Silakan login terlebih dahulu!")
-            return redirect('login')
+        report = get_object_or_404(
+            Report,
+            pk=pk
+        )
 
-        report = get_object_or_404(Report, pk=pk)
-        new_status = request.POST.get('status')
+        new_status = request.data.get(
+            'status'
+        )
 
-        # USER BIASA HANYA BOLEH KIRIM DRAFT
+        print("USER =", request.user)
+        print("AUTH =", request.user.is_authenticated)
+        print("STATUS =", new_status)
+
+        # USER BIASA
         if not request.user.is_admin:
 
             if (
-                report.reporter == request.user and
-                report.status == 'DRAFT' and
+                report.reporter == request.user
+                and
+                report.status == 'DRAFT'
+                and
                 new_status == 'REPORTED'
             ):
 
                 report.status = 'REPORTED'
                 report.save()
 
-                messages.success(request, "Laporan berhasil dikirim!")
+                return Response(
+                    {
+                        'message':
+                        'Laporan berhasil dikirim'
+                    }
+                )
 
-                return redirect('home')
+            return Response(
+                {
+                    'detail':
+                    'Akses ditolak'
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-            messages.error(request, "Akses ditolak!")
-
-            return redirect('home')
-
-        # KHUSUS ADMIN
+        # ADMIN
         valid_transitions = {
+
             'REPORTED': 'VERIFIED',
+
             'VERIFIED': 'IN_PROGRESS',
+
             'IN_PROGRESS': 'RESOLVED'
+
         }
 
         if (
-            report.status in valid_transitions and
-            valid_transitions[report.status] == new_status
+            report.status in valid_transitions
+            and
+            valid_transitions[
+                report.status
+            ] == new_status
         ):
 
             report.status = new_status
             report.save()
 
-            messages.success(request, "Status berhasil diupdate!")
+            return Response(
+                {
+                    'message':
+                    'Status berhasil diupdate'
+                }
+            )
 
-        else:
-            messages.error(request, "Perubahan status tidak valid!")
-
-        return redirect('home')
+        return Response(
+            {
+                'detail':
+                'Perubahan status tidak valid'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
