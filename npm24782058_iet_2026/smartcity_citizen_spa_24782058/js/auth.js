@@ -59,6 +59,19 @@ function setupLoginForm() {
                         'username',
                         username
                     );
+                
+                    if(username === 'nurul'
+                    ) {
+                        localStorage.setItem(
+                            'is_admin',
+                            'true'
+                        );
+                    } else {
+                        localStorage.setItem(
+                            'is_admin',
+                            'false'
+                        );
+                    }
 
                     alert(
                         'Login berhasil'
@@ -81,7 +94,7 @@ function setupLoginForm() {
                 console.error(error);
 
                 alert(
-                    'Server tidak dapat dihubungi'
+                    'Periksa Kembali Password dan Username Anda'
                 );
 
             }
@@ -181,6 +194,10 @@ function logout() {
 
     localStorage.removeItem(
         'username'
+    );
+
+    localStorage.removeItem(
+        'is_admin'
     );
 
     localStorage.removeItem(

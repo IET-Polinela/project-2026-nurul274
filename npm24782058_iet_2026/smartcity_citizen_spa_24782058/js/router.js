@@ -205,33 +205,35 @@ function handleRouting() {
     const token =
         localStorage.getItem('access_token');
 
+    // proteksi login
     if (!token &&
         hash !== '#login' &&
         hash !== '#register') {
 
         window.location.hash = '#login';
         return;
-
     }
 
+    // redirect kalau sudah login
     if (token &&
         (hash === '#login' ||
-        hash === '#register')) {
+         hash === '#register')) {
 
-        window.location.hash =
-            '#dashboard';
-
+        window.location.hash = '#dashboard';
         return;
     }
 
+    // sidebar show/hide
     if (sidebar) {
         sidebar.style.display =
             token ? 'block' : 'none';
     }
 
+    // render page
     content.innerHTML =
-        routes[hash] ||
-        routes['#login'];
+        routes[hash] || routes['#login'];
+
+    // ===== FIX RENDER FLOW =====
 
     if (hash === '#login') {
         setupLoginForm();
@@ -242,15 +244,33 @@ function handleRouting() {
     }
 
     if (hash === '#dashboard') {
+
         loadDashboardData();
+
     }
 
     if (hash === '#profil') {
+
         loadProfile();
+
     }
 
     if (hash === '#laporan') {
+
+        // reset container dulu biar tidak dobel
+        const container =
+            document.getElementById('reportContainer');
+
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center text-muted">
+                    Loading laporan...
+                </div>
+            `;
+        }
+
         loadPublicFeed();
+
     }
 }
 

@@ -127,15 +127,16 @@ class ReportViewSet(
             )
 
         elif tab == 'feed':
-
-            # Laporan publik selain DRAFT
+            if self.request.user.is_admin:
+                return queryset.exclude(
+                    status='DRAFT'
+                )
             return queryset.exclude(
                 status='DRAFT'
             ).exclude(
                 reporter=self.request.user
             )
 
-        return queryset
 
     def get_permissions(self):
 

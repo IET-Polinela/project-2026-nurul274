@@ -1,665 +1,202 @@
 // js/app.js
+console.log("SPA Loaded");
 
-console.log("Smart City Citizen SPA Loaded");
 let editingReportId = null;
-let reportChart = null;
+let chart = null;
 
-async function editDraft(id) {
+// ================= STATUS =================
+const STATUS = {
+    DRAFT: 20,
+    REPORTED: 40,
+    VERIFIED: 60,
+    IN_PROGRESS: 80,
+    RESOLVED: 100
+};
 
-    const report =
-        await getReport(id);
+const BADGE = {
+    DRAFT: "secondary",
+    REPORTED: "primary",
+    VERIFIED: "info",
+    IN_PROGRESS: "warning",
+    RESOLVED: "success"
+};
 
-    editingReportId = id;
+// ================= HELPERS =================
+const progress = s => STATUS[s] || 0;
+const badge = s => `<span class="badge bg-${BADGE[s] || 'dark'}">${s}</span>`;
 
-    document.getElementById(
-        'title'
-    ).value = report.title;
-
-    document.getElementById(
-        'category'
-    ).value = report.category;
-
-    document.getElementById(
-        'location'
-    ).value = report.location;
-
-    document.getElementById(
-        'description'
-    ).value = report.description;
-
-    openReportModal();
-
-}
-
-// Warna badge status
-function getStatusBadge(status) {
-    const badges = {
-        DRAFT: 'secondary',
-        REPORTED: 'primary',
-        VERIFIED: 'info',
-        IN_PROGRESS: 'warning',
-        RESOLVED: 'success'
-    };
-
-    return `
-        <span class="badge bg-${badges[status] || 'dark'}">
-            ${status}
-        </span>
-    `;
-}
-
-// Ambil statistik dashboard
+// ================= DASHBOARD =================
 async function loadDashboardData() {
 
-    const response =
-        await requestAPI(
-            '/api/report/?tab=my_reports&page_size=1000'
-        );
+    const res = await requestAPI('/api/report/?tab=my_reports&page_size=1000');
+    if (!res.ok) return;
 
-    if (!response.ok) return;
+    const data = res.data.results || [];
 
-    const reports =
-        response.data.results || [];
+    const s = { DRAFT:0, REPORTED:0, VERIFIED:0, IN_PROGRESS:0, RESOLVED:0 };
 
-    const stats = {
+    data.forEach(r => s[r.status]++);
 
-        DRAFT: 0,
-        REPORTED: 0,
-        VERIFIED: 0,
-        IN_PROGRESS: 0,
-        RESOLVED: 0
+    draftCount.innerText = s.DRAFT;
+    reportedCount.innerText = s.REPORTED;
+    verifiedCount.innerText = s.VERIFIED;
+    progressCount.innerText = s.IN_PROGRESS;
+    resolvedCount.innerText = s.RESOLVED;
 
-    };
+    totalReport.innerText = data.length;
+    resolvedReport.innerText = s.RESOLVED;
 
-    reports.forEach(report => {
-
-        if (
-            stats[report.status] !== undefined
-        ) {
-
-            stats[report.status]++;
-
-        }
-
-    });
-
-    document.getElementById(
-        'totalReport'
-    ).innerText = reports.length;
-
-    document.getElementById(
-        'resolvedReport'
-    ).innerText = stats.RESOLVED;
-
-    const ctx =
-        document.getElementById(
-            'reportChart'
-        );
-
+    const ctx = document.getElementById("reportChart");
     if (!ctx) return;
 
-    if (reportChart) {
-        reportChart.destroy();
-    }
+    chart?.destroy();
 
-    if (!ctx) return;
-
-    reportChart = new Chart(ctx, {
-
-        type: 'doughnut',
-
+    chart = new Chart(ctx, {
+        type: "doughnut",
         data: {
+            labels: Object.keys(s),
+            datasets: [{ data: Object.values(s) }]
+        }
+    });
+}
 
-            labels: [
-                'Draft',
-                'Reported',
-                'Verified',
-                'In Progress',
-                'Resolved'
-            ],
+// ================= RENDER =================
+function renderReports(data) {
 
-            datasets: [{
+    const el = document.getElementById("reportContainer");
 
-                data: [
+    if (!data.length)
+        return el.innerHTML = `<div class="alert alert-info">Tidak ada laporan</div>`;
 
-                    stats.DRAFT,
-                    stats.REPORTED,
-                    stats.VERIFIED,
-                    stats.IN_PROGRESS,
-                    stats.RESOLVED
+    const isAdmin = localStorage.getItem("is_admin") === "true";
 
-                ]
+    el.innerHTML = data.map(r => {
 
-            }]
+        let btn = "";
 
+        // USER ACTION
+        if (r.status === "DRAFT") {
+            btn += `
+                <button class="btn btn-warning btn-sm" onclick="editDraft(${r.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteReport(${r.id})">Hapus</button>
+                <button class="btn btn-success btn-sm" onclick="submitDraft(${r.id})">Kirim</button>
+            `;
         }
 
-    });
+        // ADMIN ACTION
+        if (isAdmin) {
+            if (r.status === "REPORTED")
+                btn += `<button class="btn btn-primary btn-sm" onclick="updateStatus(${r.id},'VERIFIED')">Verifikasi</button>`;
 
+            if (r.status === "VERIFIED")
+                btn += `<button class="btn btn-warning btn-sm" onclick="updateStatus(${r.id},'IN_PROGRESS')">Proses</button>`;
+
+            if (r.status === "IN_PROGRESS")
+                btn += `<button class="btn btn-success btn-sm" onclick="updateStatus(${r.id},'RESOLVED')">Selesai</button>`;
+        }
+
+        return `
+        <div class="card mb-2">
+            <div class="card-body">
+
+                <h6>${r.title}</h6>
+                <small>${r.description}</small>
+
+                <div class="mt-2">${badge(r.status)}</div>
+
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-primary"
+                        style="width:${progress(r.status)}%">
+                        ${progress(r.status)}%
+                    </div>
+                </div>
+
+                <div class="mt-2 d-flex gap-2 flex-wrap">
+                    ${btn}
+                </div>
+
+            </div>
+        </div>`;
+    }).join("");
 }
 
-function getProgress(status){
+// ================= API WRAPPER =================
+const loadMyReports = async () =>
+    (await requestAPI('/api/report/?tab=my_reports')).data.results || [];
 
-    const progress = {
+const loadPublicFeed = async () =>
+    renderReports((await requestAPI('/api/report/?tab=feed')).data.results || []);
 
-        DRAFT:20,
-        REPORTED:40,
-        VERIFIED:60,
-        IN_PROGRESS:80,
-        RESOLVED:100
+// ================= STATUS UPDATE =================
+async function updateStatus(id, status) {
 
-    };
-
-    return progress[status] || 0;
-}
-
-// Feed publik
-async function loadPublicFeed(page = 1) {
-
-    const response = await requestAPI(
-        `/api/report/?tab=feed&page=${page}`
+    const res = await requestAPI(
+        `/reports/${id}/update-status/`,
+        "POST",
+        { status }
     );
 
-    if (!response.ok) return [];
-
-    const reports = response.data.results || [];
-    renderReports(reports);
-    return reports;
+    if (res.ok) {
+        loadPublicFeed();
+        loadDashboardData();
+    } else {
+        alert(JSON.stringify(res.data));
+    }
 }
 
-// Laporan saya
-async function loadMyReports(page = 1) {
+function toggleRekap() {
 
-    const response = await requestAPI(
-        `/api/report/?tab=my_reports&page=${page}`
-    );
+    const content =
+        document.getElementById(
+            'rekapContent'
+        );
 
-    if (!response.ok) return [];
+    const arrow =
+        document.getElementById(
+            'rekapArrow'
+        );
 
-    const reports = response.data.results || [];
-    renderReports(reports);
-    return reports;
+    if (!content) return;
 
-}
+    const isOpen =
+        content.style.display === 'block';
 
-// Detail laporan
-async function getReport(id) {
+    content.style.display =
+        isOpen ? 'none' : 'block';
 
-    const response = await requestAPI(
-        `/api/report/${id}/`
-    );
-
-    return response.data;
-}
-
-// Tambah laporan
-async function createReport(data) {
-
-    return await requestAPI(
-        '/api/report/',
-        'POST',
-        data
-    );
+    arrow.innerHTML =
+        isOpen ? '▼' : '▲';
 }
 
 function openReportModal() {
 
-    document.getElementById('reportForm').reset();
+    editingReportId = null;
 
-    const modal = new bootstrap.Modal(
-        document.getElementById('reportModal')
-    );
+    document
+        .getElementById(
+            'reportForm'
+        )
+        .reset();
+
+    const modal =
+        new bootstrap.Modal(
+            document.getElementById(
+                'reportModal'
+            )
+        );
 
     modal.show();
-
 }
 
-// Edit laporan
-async function updateReport(id, data) {
+window.loadPublicFeed = loadPublicFeed;
+window.loadSubmittedReports = loadSubmittedReports;
+window.loadDraftReports = loadDraftReports;
 
-    return await requestAPI(
-        `/api/report/${id}/`,
-        'PUT',
-        data
-    );
-}
+window.openReportModal = openReportModal;
 
-// Hapus laporan
-async function deleteReport(id) {
+window.toggleRekap = toggleRekap;
 
-    if (!confirm('Hapus laporan?')) return;
-
-    const response = await requestAPI(
-        `/api/report/${id}/`,
-        'DELETE'
-    );
-
-    if (response.ok) {
-
-        alert('Laporan berhasil dihapus');
-
-    await Promise.all([
-        loadMyReports(),
-        loadDashboardData(),
-        loadPublicFeed()
-    ]);
-        loadMyReports();
-        loadDashboardData();
-
-    } else {
-
-        alert(
-            JSON.stringify(
-                response.data
-            )
-        );
-
-    }
-
-}
-
-// Simpan draft
-async function saveDraft(data) {
-
-    data.status = 'DRAFT';
-
-    return await createReport(data);
-}
-
-// Kirim draft
-async function submitDraft(id) {
-
-    const response = await requestAPI(
-        `/reports/${id}/update-status/`,
-        'POST',
-        {
-            status: 'REPORTED'
-        }
-    );
-
-    if (response.ok) {
-
-        alert(
-            'Draft berhasil dikirim'
-        );
-
-    await Promise.all([
-        loadMyReports(),
-        loadDashboardData(),
-    ]);
-        await loadMyReports();
-        await loadDashboardData();
-       
-
-    } else {
-
-        alert(
-            JSON.stringify(
-                response.data
-            )
-        );
-
-    }
-
-}
-
-// Profil
-async function loadProfile() {
-
-    const username =
-        localStorage.getItem(
-            'username'
-        ) || 'Warga';
-
-    const email =
-        localStorage.getItem(
-            'email'
-        ) || '-';
-
-    const profileContainer =
-        document.getElementById(
-            'profileContainer'
-        );
-
-    profileContainer.innerHTML = `
-
-        <div class="text-center">
-
-            <i
-                class="bi bi-person-circle"
-                style="
-                    font-size:120px;
-                    color:#0d6efd;
-                ">
-            </i>
-
-            <h3 class="mt-3">
-                ${username}
-            </h3>
-
-            <p>
-                ${email}
-            </p>
-
-            <p class="text-muted">
-
-                Bergabung:
-                ${new Date()
-                    .toLocaleDateString(
-                        'id-ID'
-                    )}
-
-            </p>
-
-            <hr>
-
-            <h5>
-                Tentang Saya
-            </h5>
-
-            <p>
-
-                Warga aktif pengguna
-                Smart City Portal.
-
-            </p>
-
-        </div>
-
-    `;
-}
-
-document.addEventListener(
-    'DOMContentLoaded',
-    () => {
-
-        document
-            .getElementById('btnDraft')
-            ?.addEventListener(
-                'click',
-                async () => {
-
-                    const data = {
-
-                        title:
-                            document.getElementById(
-                                'title'
-                            ).value,
-
-                        category:
-                            document.getElementById(
-                                'category'
-                            ).value,
-
-                        location:
-                            document.getElementById(
-                                'location'
-                            ).value,
-
-                        description:
-                            document.getElementById(
-                                'description'
-                            ).value
-                    };
-
-                    let response;
-
-                    if (editingReportId) {
-                        response =
-                            await updateReport(
-                                editingReportId,
-                                {
-                                    ...data,
-                                    status: 'DRAFT'
-                                }
-                            );
-                        
-                        editingReportId = null; 
-                        } else {
-                            response = await saveDraft(data);
-                        }
-                    
-                    console.log(data, response);
-
-
-                    if (response.ok) {
-
-                        alert(
-                            'Draft berhasil disimpan'
-                        );
-
-                        bootstrap.Modal
-                            .getInstance(
-                                document.getElementById(
-                                    'reportModal'
-                                )
-                            )
-                            .hide();
-
-                        loadMyReports();
-
-                    } else {
-
-                        alert(
-                            JSON.stringify(
-                                response.data
-                            )
-                        );
-
-                    }
-
-                }
-            );
-
-        document
-            .getElementById('btnSubmit')
-            ?.addEventListener(
-                'click',
-                submitReport
-            );
-
-    }
-);
-  
-
-async function submitReport() {
-
-    const data = {
-
-        title:
-            document.getElementById(
-                'title'
-            ).value,
-
-        category:
-            document.getElementById(
-                'category'
-            ).value,
-
-        location:
-            document.getElementById(
-                'location'
-            ).value,
-
-        description:
-            document.getElementById(
-                'description'
-            ).value,
-
-        status: 'REPORTED'
-
-    };
-
-    let response;
-
-    if (editingReportId) {
-        response = 
-            await updateReport(
-                editingReportId,
-                data
-            );
-
-        editingReportId = null;
-    } else {
-        response = await createReport(data);
-    }
-
-    if (response.ok) {
-
-        alert(
-            'Laporan berhasil dibuat'
-        );
-
-        bootstrap.Modal
-            .getInstance(
-                document.getElementById(
-                    'reportModal'
-                )
-            )
-            .hide();
-
-    await Promise.all([
-        loadMyReports(),
-        loadDashboardData(),
-        loadPublicFeed()
-    ]);
-
-    } else {
-
-        alert(
-            JSON.stringify(
-                response.data
-            )
-        );
-
-    }
-
-}
-
-function renderReports(reports) {
-
-    const container =
-        document.getElementById(
-            'reportContainer'
-        );
-
-    if (reports.length === 0) {
-
-        container.innerHTML = `
-            <div class="alert alert-info">
-                Belum ada laporan.
-            </div>
-        `;
-
-        return;
-    }
-
-    container.innerHTML =
-        reports.map(report => `
-
-            <div class="card mb-3 shadow-sm">
-
-                <div class="card-body">
-
-                    <h5>${report.title}</h5>
-
-                    <p>
-                        ${report.description}
-                    </p>
-
-                    <p>
-                        <b>Kategori:</b>
-                        ${report.category}
-                    </p>
-
-                    <p>
-                        <b>Lokasi:</b>
-                        ${report.location}
-                    </p>
-
-                    ${getStatusBadge(
-                        report.status
-                    )}
-
-                    <div class="progress mt-3">
-
-                        <div
-                            class="progress-bar
-                            ${report.status === 'DRAFT' ? 'bg-secondary' : ''}
-                            ${report.status === 'REPORTED' ? 'bg-primary' : ''}
-                            ${report.status === 'VERIFIED' ? 'bg-info' : ''}
-                            ${report.status === 'IN_PROGRESS' ? 'bg-warning' : ''}
-                            ${report.status === 'RESOLVED' ? 'bg-success' : ''}"
-                            role="progressbar"
-                            style="width:${getProgress(report.status)}%">
-                            ${getProgress(report.status)}%
-                        </div>
-
-                    </div>
-
-
-                    <hr>
-
-                    ${report.is_owner &&
-                    report.status === 'DRAFT'
-                    ? `
-                        <button
-                            class="btn btn-warning btn-sm"
-                            onclick="editDraft(${report.id})">
-
-                            Edit
-
-                        </button>
-
-                        <button
-                            class="btn btn-danger btn-sm"
-                            onclick="deleteReport(${report.id})">
-
-                            Hapus
-
-                        </button>
-
-                        <button
-                            class="btn btn-success btn-sm"
-                            onclick="submitDraft(${report.id})">
-
-                            Kirim
-
-                        </button>
-                    `
-                    : ''}
-
-                </div>
-
-            </div>
-
-        `).join('');
-}
-
-async function loadDraftReports() {
-
-    const reports =
-        await loadMyReports();
-
-    const drafts =
-        reports.filter(
-            report =>
-                report.status === 'DRAFT'
-        );
-
-    renderReports(drafts);
-}
-
-async function loadSubmittedReports() {
-
-    const reports =
-        await loadMyReports();
-
-    const submitted =
-        reports.filter(
-            report =>
-                report.status !== 'DRAFT'
-        );
-
-    renderReports(submitted);
-}
+window.editDraft = editDraft;
+window.deleteReport = deleteReport;
+window.submitDraft = submitDraft;
+window.updateStatus = updateStatus;
