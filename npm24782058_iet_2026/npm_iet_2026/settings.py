@@ -26,8 +26,9 @@ SECRET_KEY = 'django-insecure-2)rmu07)t#1bd7kxjo(%n7fts*zr#)r62ax)^7l8#zf(+q^kz+
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '103.151.63.86',
+    'localhost',
     '127.0.0.1',
-    'localhost'
 ]
 
 # Application definition
@@ -152,7 +153,6 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
 }
-CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",

@@ -25,9 +25,11 @@ SECRET_KEY = 'django-insecure-2)rmu07)t#1bd7kxjo(%n7fts*zr#)r62ax)^7l8#zf(+q^kz+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
-CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = [
+    '103.151.63.86',
+    'localhost',
+    '127.0.0.1',
+]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -89,9 +91,9 @@ WSGI_APPLICATION = 'smartcity_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'smartcity_db',
-        'USER': 'postgres',
-        'PASSWORD': 'nurul123',
+        'NAME': 'db_mhs08',
+        'USER': 'user_mhs08',
+        'PASSWORD': 'mhs08',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -158,4 +160,5 @@ CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "http://103.151.63.86:8008",
 ]
