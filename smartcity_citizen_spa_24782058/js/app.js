@@ -189,8 +189,12 @@ function openReportModal() {
 }
 
 window.loadPublicFeed = loadPublicFeed;
-window.loadSubmittedReports = loadSubmittedReports;
-window.loadDraftReports = loadDraftReports;
+
+if (typeof loadSubmittedReports !== "undefined")
+    window.loadSubmittedReports = loadSubmittedReports;
+
+if (typeof loadDraftReports !== "undefined")
+    window.loadDraftReports = loadDraftReports;
 
 window.openReportModal = openReportModal;
 

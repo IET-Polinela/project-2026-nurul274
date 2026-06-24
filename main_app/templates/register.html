@@ -1,16 +1,174 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5" style="max-width:400px;">
-    <h3>Register</h3>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
+<div class="row align-items-center min-vh-75">
 
-        <button class="btn btn-success w-100">Register</button>
-    </form>
+```
+<!-- KIRI -->
+<div class="col-lg-6 mb-4">
 
-    <a href="{% url 'login' %}" class="btn btn-primary w-100 mt-2">Kembali ke Login</a>
+    <div class="p-lg-5">
+
+        <span class="badge bg-success mb-3">
+            Smart City Reporting System
+        </span>
+
+        <h1 class="display-5 fw-bold mb-3">
+            Buat Akun Baru
+        </h1>
+
+        <p class="lead text-muted mb-4">
+            Bergabunglah dengan sistem pelaporan masyarakat untuk membantu
+            meningkatkan kualitas layanan publik dan mendukung terciptanya
+            kota yang lebih responsif, transparan, dan berkelanjutan.
+        </p>
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <h5>Akses Mudah</h5>
+                    <small>
+                        Registrasi cepat dan aman untuk seluruh warga.
+                    </small>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="feature-box">
+                    <h5>Pelacakan Laporan</h5>
+                    <small>
+                        Pantau perkembangan laporan hingga selesai.
+                    </small>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
+<!-- KANAN -->
+<div class="col-lg-6">
+
+    <div class="card border-0 shadow-lg register-card">
+
+        <div class="card-body p-5">
+
+            <h2 class="fw-bold text-center mb-4">
+                Register
+            </h2>
+
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {{ form.errors }}
+            </div>
+            {% endif %}
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Username
+                    </label>
+                    {{ form.username }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Email
+                    </label>
+                    {{ form.email }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Password
+                    </label>
+                    {{ form.password1 }}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        Konfirmasi Password
+                    </label>
+                    {{ form.password2 }}
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-success btn-lg w-100">
+
+                    Daftar Sekarang
+
+                </button>
+
+            </form>
+
+            <hr>
+
+            <div class="text-center">
+
+                <p class="text-muted mb-2">
+                    Sudah memiliki akun?
+                </p>
+
+                <a href="{% url 'login' %}"
+                   class="btn btn-primary w-100">
+
+                    Kembali ke Login
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<style>
+
+.min-vh-75{
+    min-height:75vh;
+}
+
+.register-card{
+    border-radius:20px;
+}
+
+.feature-box{
+    background:#ffffff;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ced4da;
+    border-radius:12px;
+}
+
+input:focus{
+    outline:none;
+    border-color:#0d6efd;
+    box-shadow:0 0 0 0.2rem rgba(13,110,253,.15);
+}
+
+.btn{
+    border-radius:12px;
+}
+
+</style>
+
 {% endblock %}

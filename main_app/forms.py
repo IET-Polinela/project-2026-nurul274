@@ -1,8 +1,16 @@
 from django import forms
-from .models import Report
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser
 
-class ReportForm(forms.ModelForm):
+class RegisterForm(UserCreationForm):
+
+    email = forms.EmailField(required=True)
+
     class Meta:
-        model = Report
-        fields = ['title', 'category', 'description', 'location']
-
+        model = CustomUser
+        fields = [
+            'username',
+            'email',
+            'password1',
+            'password2'
+        ]

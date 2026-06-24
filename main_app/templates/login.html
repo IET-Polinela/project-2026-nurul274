@@ -1,25 +1,193 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5" style="max-width:400px;">
-    <h3>Login</h3>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-danger">
-                {{ message }}
+<div class="row align-items-center min-vh-75">
+
+
+<!-- KIRI -->
+<div class="col-lg-6 mb-4">
+
+    <div class="p-lg-5">
+
+        <span class="badge bg-primary mb-3">
+            Smart City Reporting System
+        </span>
+
+        <h1 class="display-5 fw-bold mb-3">
+
+            Selamat Datang Kembali
+
+        </h1>
+
+        <p class="lead text-muted mb-4">
+
+            Masuk ke sistem untuk mengelola laporan,
+            memantau perkembangan pengaduan masyarakat,
+            serta membantu meningkatkan kualitas pelayanan publik
+            melalui platform Smart City Reporting.
+
+        </p>
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+
+                <div class="feature-box">
+
+                    <h5>Pelaporan Cepat</h5>
+
+                    <small>
+                        Kirim laporan kapan saja dan di mana saja.
+                    </small>
+
+                </div>
+
             </div>
-        {% endfor %}
-    {% endif %}
 
-    <form method="post">
-        {% csrf_token %}
-        <input name="username" class="form-control mb-2" placeholder="Username / Email">
-        <input type="password" name="password" class="form-control mb-2" placeholder="Password">
+            <div class="col-md-6">
 
-        <button class="btn btn-primary w-100">Login</button>
-    </form>
+                <div class="feature-box">
 
-    <a href="{% url 'register' %}" class="btn btn-success w-100 mt-2">Register</a>
+                    <h5>Monitoring Status</h5>
+
+                    <small>
+                        Pantau proses laporan secara real-time.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
+<!-- KANAN -->
+<div class="col-lg-6">
+
+    <div class="card login-card border-0 shadow-lg">
+
+        <div class="card-body p-5">
+
+            <h2 class="fw-bold text-center mb-4">
+
+                Login
+
+            </h2>
+
+            {% if messages %}
+                {% for message in messages %}
+
+                    <div class="alert alert-danger">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Username / Email
+
+                    </label>
+
+                    <input
+                        name="username"
+                        class="form-control form-control-lg"
+                        placeholder="Masukkan username atau email">
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="form-label">
+
+                        Password
+
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control form-control-lg"
+                        placeholder="Masukkan password">
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-lg w-100">
+
+                    Login
+
+                </button>
+
+            </form>
+
+            <hr>
+
+            <div class="text-center">
+
+                <p class="text-muted mb-2">
+
+                    Belum memiliki akun?
+
+                </p>
+
+                <a href="{% url 'register' %}"
+                   class="btn btn-success w-100">
+
+                    Register Sekarang
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<style>
+
+.min-vh-75{
+    min-height:75vh;
+}
+
+.login-card{
+    border-radius:20px;
+}
+
+.feature-box{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+.form-control{
+    border-radius:12px;
+}
+
+.btn{
+    border-radius:12px;
+}
+
+</style>
+
 {% endblock %}
