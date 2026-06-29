@@ -1,0 +1,30 @@
+<h2>Daftar Laporan</h2>
+
+<a href="/add/">+ Tambah</a>
+
+<ul>
+{% for report in reports %}
+    <li>
+        <b>{{ report.title }}</b> - {{ report.category }} <br>
+        Status: {{ report.status }} <br>
+
+        <a href="/update/{{ report.id }}">Edit</a> |
+        <a href="/delete/{{ report.id }}">Hapus</a> |
+        <a href="/report/{{ report.id }}">Detail</a>
+
+        <!-- WORKFLOW BUTTON -->
+        <form action="/update-status/{{ report.id }}/" method="POST">
+            {% csrf_token %}
+            
+            {% if report.status == 'REPORTED' %}
+                <button name="status" value="VERIFIED">Verifikasi</button>
+            {% elif report.status == 'VERIFIED' %}
+                <button name="status" value="IN_PROGRESS">Proses</button>
+            {% elif report.status == 'IN_PROGRESS' %}
+                <button name="status" value="RESOLVED">Selesai</button>
+            {% endif %}
+        </form>
+    </li>
+    <hr>
+{% endfor %}
+</ul>
