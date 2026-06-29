@@ -3,6 +3,7 @@ name: Deploy Frontend SPA to GitHub Pages
 on:
   push:
     branches: ["main", "master"]
+
   workflow_dispatch:
 
 permissions:
@@ -10,29 +11,25 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-size: ubuntu-latest
+
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Mengarah langsung ke folder SPA di dalam server_smartcity
-          path: './server_smartcity/smartcity_citizen_spa_24782058'
+          path: './smartcity_citizen_spa_24782058'
 
       - name: Deploy to GitHub Pages
         id: deployment
