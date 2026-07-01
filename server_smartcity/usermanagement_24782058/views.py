@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
+from django.db import IntegrityError
 from .forms import RegisterForm
 
 
@@ -21,7 +22,14 @@ def register_view(request):
 
             # HAPUS set_password (sudah otomatis dari UserCreationForm)
 
-            user.save()
+            try:
+                user.save()
+            except IntegrityError:
+                messages.error(
+                    request,
+                    f'Username "{user.username}" sudah terdaftar. Silakan gunakan username lain.'
+                )
+                return render(request, 'register.html', {'form': form})
 
             messages.success(request, "Registrasi berhasil! Silakan login.")
             return redirect('login')

@@ -23,12 +23,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-2)rmu07)t#1bd7kxjo(%n7fts*zr#)r62ax)^7l8#zf(+q^kz+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# =====================
+# PRODUCTION SETTINGS
+# =====================
+# Ubah ke False setelah deployment production
+DEBUG = True  # TODO: Set ke False untuk production
 
 ALLOWED_HOSTS = [
     '103.151.63.86',
     'localhost',
     '127.0.0.1',
+    '.github.dev',
 ]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -50,6 +55,10 @@ INSTALLED_APPS = [
     'main_app',
     'about',
     'contacts',
+
+    # OpenAPI Documentation
+    'drf_spectacular',
+    'django_scalar',
 ]
 
 MIDDLEWARE = [
@@ -92,8 +101,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_mhs08',
-        'USER': 'user_mhs08',
-        'PASSWORD': 'mhs08',
+        'USER': 'postgres',
+        'PASSWORD': 'amar123',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -154,11 +163,56 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
-CORS_ALLOW_ALL_ORIGINS = True
+
+# =====================
+# SPECTACULAR SETTINGS
+# =====================
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Smart City API',
+    'DESCRIPTION': 'API untuk Citizen Portal Smart City — kelola laporan warga, tracking status, dan notifikasi.',
+    'VERSION': '1.0.0',
+
+    # Bearer Token Auth (JWT)
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': False,
+    },
+
+    'COMPONENT_SPLIT_REQUEST': True,
+
+    'SECURITY': [
+        {'BearerAuth': []},
+    ],
+}
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
     "http://103.151.63.86:8008",
+    "https://103.151.63.86:8008",
+]
+
+# =====================
+# CORS - Izinkan semua origin untuk lab
+# Untuk production, spesifikkan origin GitHub Pages
+# =====================
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    'x-csrftoken',
+    'x-requested-with',
 ]

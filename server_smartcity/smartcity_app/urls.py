@@ -22,6 +22,15 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView
 )
 
+# drf-spectacular
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+)
+
+# django-scalar (function-based view)
+from django_scalar.views import scalar_viewer
+
 urlpatterns = [
 
     path(
@@ -59,6 +68,34 @@ urlpatterns = [
         'api/token/refresh/',
         TokenRefreshView.as_view(),
         name='token_refresh'
+    ),
+
+    # =====================
+    # OpenAPI Documentation (Lab 14)
+    # =====================
+    path(
+        'api/schema/',
+        SpectacularAPIView.as_view(),
+        name='schema'
+    ),
+
+    path(
+        'api/docs/swagger/',
+        SpectacularSwaggerView.as_view(
+            url_name='schema'
+        ),
+        name='swagger-ui'
+    ),
+
+    path(
+        'api/docs/scalar/',
+        scalar_viewer,
+        {
+            'openapi_url': '/api/schema/',
+            'title': 'Smart City API - Scalar UI',
+            'scalar_theme': 'purple',
+        },
+        name='scalar-ui'
     ),
 
 ]

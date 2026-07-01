@@ -1,0 +1,33 @@
+[Unit]
+Description=gunicorn - SmartCity Django Backend (MHS08)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/project-2026-nurul274/server_smartcity
+ExecStart=/root/project-2026-nurul274/server_smartcity/venv/bin/gunicorn \
+    --workers 3 \
+    --bind 0.0.0.0:8000 \
+    --timeout 120 \
+    --access-logfile /var/log/gunicorn/access.log \
+    --error-logfile /var/log/gunicorn/error.log \
+    --capture-output \
+    --log-level info \
+    smartcity_app.wsgi:application
+
+Restart=always
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

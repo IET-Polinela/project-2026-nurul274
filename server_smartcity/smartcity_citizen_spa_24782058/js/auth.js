@@ -44,51 +44,18 @@ function setupLoginForm() {
                     );
 
                 if (response.ok) {
-
-                    localStorage.setItem(
-                        'access_token',
-                        response.data.access
-                    );
-
-                    localStorage.setItem(
-                        'refresh_token',
-                        response.data.refresh
-                    );
-
-                    localStorage.setItem(
-                        'username',
-                        username
-                    );
-
-                    localStorage.setItem(
-                    'is_admin',
-                    'false'
-                    );
-            
-                    alert(
-                        'Login berhasil'
-                    );
-
-                    window.location.hash =
-                        '#dashboard';
-
+                    localStorage.setItem('access_token', response.data.access);
+                    localStorage.setItem('refresh_token', response.data.refresh);
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('is_admin', 'false');
+                    showToast('✅ Selamat datang, ' + username + '!', 'success');
+                    window.location.hash = '#dashboard';
                 } else {
-
-                    alert(
-                        response.data.detail ||
-                        'Username atau password salah'
-                    );
-
+                    showToast(response.data.detail || 'Username atau password salah', 'error');
                 }
-
             } catch(error) {
-
                 console.error(error);
-
-                alert(
-                    'Periksa Kembali Password dan Username Anda'
-                );
-
+                showToast('Terjadi kesalahan. Periksa koneksi Anda.', 'error');
             }
 
         }
@@ -114,23 +81,21 @@ function setupRegisterForm() {
                 document.getElementById('registerUsername').value;
 
             if (!username.trim()) {
-                alert('Username tidak boleh kosong');
+                showToast('Username tidak boleh kosong', 'warning');
                 return;
             }
 
-            const email =
-                document.getElementById('registerEmail').value;
+            const email = document.getElementById('registerEmail').value;
 
             if (!email.includes('@')) {
-                alert('Email tidak valid');
+                showToast('Email tidak valid', 'warning');
                 return;
             }
 
-            const password =
-                document.getElementById('registerPassword').value;
+            const password = document.getElementById('registerPassword').value;
 
             if (password.length < 8) {
-                alert('Password harus minimal 8 karakter');
+                showToast('Password harus minimal 8 karakter', 'warning');
                 return;
             }
 
@@ -147,27 +112,18 @@ function setupRegisterForm() {
             );
 
             if (response.ok) {
-
-                alert('Registrasi berhasil. Silakan login.');
-
+                showToast('✅ Registrasi berhasil! Silakan login.', 'success');
                 window.location.hash = '#login';
-
             } else {
-
                 let msg = 'Registrasi gagal';
-
                 if (response.data) {
                     msg = Object.values(response.data).flat().join('\n');
                 }
-
-                alert(msg);
+                showToast(msg, 'error');
             }
-
         } catch (error) {
-
             console.error(error);
-
-            alert('Server tidak dapat dihubungi');
+            showToast('Server tidak dapat dihubungi', 'error');
         }
 
     });
@@ -177,27 +133,12 @@ function setupRegisterForm() {
 
 // Logout
 function logout() {
-
-    localStorage.removeItem(
-        'access_token'
-    );
-
-    localStorage.removeItem(
-        'refresh_token'
-    );
-
-    localStorage.removeItem(
-        'username'
-    );
-
-    localStorage.removeItem(
-        'is_admin'
-    );
-
-    localStorage.removeItem(
-        'email'
-    );
-
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('is_admin');
+    localStorage.removeItem('email');
+    showToast('👋 Berhasil logout!', 'info');
     window.location.hash = '#login';
 }
 
