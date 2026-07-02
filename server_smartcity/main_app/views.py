@@ -4,15 +4,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-import json
-from django.http import JsonResponse
 from .models import Report
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
 
 # LIST (ADMIN vs USER)
 class ReportListView(ListView):
@@ -125,11 +117,7 @@ class ReportDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # UPDATE STATUS
-class ReportUpdateStatusView(APIView):
-
-    permission_classes = [
-        IsAuthenticated
-    ]
+class ReportUpdateStatusView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
 
@@ -138,13 +126,9 @@ class ReportUpdateStatusView(APIView):
             pk=pk
         )
 
-        new_status = request.data.get(
+        new_status = request.POST.get(
             'status'
         )
-
-        print("USER =", request.user)
-        print("AUTH =", request.user.is_authenticated)
-        print("STATUS =", new_status)
 
         # USER BIASA
         if not request.user.is_admin:
@@ -160,20 +144,19 @@ class ReportUpdateStatusView(APIView):
                 report.status = 'REPORTED'
                 report.save()
 
-                return Response(
-                    {
-                        'message':
-                        'Laporan berhasil dikirim'
-                    }
+                messages.success(
+                    request,
+                    "Laporan berhasil dikirim!"
                 )
 
-            return Response(
-                {
-                    'detail':
-                    'Akses ditolak'
-                },
-                status=status.HTTP_403_FORBIDDEN
+                return redirect('home')
+
+            messages.error(
+                request,
+                "Akses ditolak!"
             )
+
+            return redirect('home')
 
         # ADMIN
         valid_transitions = {
@@ -197,17 +180,16 @@ class ReportUpdateStatusView(APIView):
             report.status = new_status
             report.save()
 
-            return Response(
-                {
-                    'message':
-                    'Status berhasil diupdate'
-                }
+            messages.success(
+                request,
+                "Status berhasil diupdate!"
             )
 
-        return Response(
-            {
-                'detail':
-                'Perubahan status tidak valid'
-            },
-            status=status.HTTP_400_BAD_REQUEST
+            return redirect('home')
+
+        messages.error(
+            request,
+            "Perubahan status tidak valid!"
         )
+
+        return redirect('home')
