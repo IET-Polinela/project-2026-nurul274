@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-2)rmu07)t#1bd7kxjo(%n7fts*zr#)r62ax)^7l8#zf(+q^kz+
 # PRODUCTION SETTINGS
 # =====================
 # Ubah ke False setelah deployment production
-DEBUG = False  # TODO: Set ke False untuk production
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '103.151.63.86',
@@ -35,6 +35,14 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '.github.dev',
 ]
+
+# =====================
+# HTTPS / SSL Settings (dinonaktifkan untuk local development)
+# =====================
+# Aktifkan kembali jika pakai HTTPS di production
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -156,6 +164,7 @@ LOGIN_URL = '/login/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 
@@ -192,9 +201,12 @@ SPECTACULAR_SETTINGS = {
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
     "http://103.151.63.86:8008",
     "https://103.151.63.86:8008",
-    "https://iet-polinela.github.io/project-2026-nurul274/",
+    "https://103.151.63.86",
+    "https://iet-polinela.github.io",
 ]
 
 # =====================
