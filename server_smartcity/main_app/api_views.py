@@ -2,8 +2,11 @@ from rest_framework import (
     permissions,
     viewsets,
     serializers,
-    generics
+    generics,
+    status
 )
+
+from rest_framework.response import Response
 
 from rest_framework.exceptions import (
     PermissionDenied
@@ -24,6 +27,7 @@ from .serializers import ReportSerializer
 from .permissions import (
     IsOwnerAndDraftOrReadOnly
 )
+
 
 class ReportPagination(
     PageNumberPagination
@@ -46,13 +50,40 @@ class RegisterSerializer(
     serializers.Serializer
 ):
 
-    username = serializers.CharField()
+    username = serializers.CharField(
+        max_length=150
+    )
 
     email = serializers.EmailField()
 
     password = serializers.CharField(
-        write_only=True
+        write_only=True,
+        min_length=8
     )
+
+    def validate_username(self, value):
+
+        if User.objects.filter(
+            username=value
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Username sudah digunakan."
+            )
+
+        return value
+
+    def validate_email(self, value):
+
+        if User.objects.filter(
+            email=value
+        ).exists():
+
+            raise serializers.ValidationError(
+                "Email sudah digunakan."
+            )
+
+        return value
 
 
 class RegisterView(
@@ -63,25 +94,46 @@ class RegisterView(
         RegisterSerializer
     )
 
-    def perform_create(
+    permission_classes = [
+        permissions.AllowAny
+    ]
+
+    def create(
         self,
-        serializer
+        request,
+        *args,
+        **kwargs
     ):
+
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
 
         User.objects.create_user(
 
             username=serializer.validated_data[
-                'username'
+                "username"
             ],
 
             email=serializer.validated_data[
-                'email'
+                "email"
             ],
 
             password=serializer.validated_data[
-                'password'
+                "password"
             ]
 
+        )
+
+        return Response(
+            {
+                "message": "Registrasi berhasil"
+            },
+            status=status.HTTP_201_CREATED
         )
 
 
@@ -122,7 +174,7 @@ class ReportViewSet(
             if not self.request.user.is_authenticated:
 
                 return queryset.exclude(
-                status="DRAFT"
+                    status="DRAFT"
                 )
 
             # User Login
@@ -162,15 +214,14 @@ class ReportViewSet(
 
             return queryset.filter(
                 reporter=self.request.user
-        )
+            )
 
         # =================================
         # Default
         # =================================
         return queryset.filter(
-        reporter=self.request.user
+            reporter=self.request.user
         )
-    
 
     def get_permissions(self):
 
