@@ -105,8 +105,7 @@ function setupRegisterForm() {
                 {
                     username,
                     email,
-                    password1: password,
-                    password2: password
+                    password: password       
 
                 }
             );
