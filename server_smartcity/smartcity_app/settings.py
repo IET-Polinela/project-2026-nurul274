@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-2)rmu07)t#1bd7kxjo(%n7fts*zr#)r62ax)^7l8#zf(+q^kz+
 # PRODUCTION SETTINGS
 # =====================
 # Ubah ke False setelah deployment production
-DEBUG = True  # TODO: Set ke False untuk production
+DEBUG = False  # TODO: Set ke False untuk production
 
 ALLOWED_HOSTS = [
     '103.151.63.86',
