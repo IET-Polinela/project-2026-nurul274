@@ -194,6 +194,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5500",
     "http://103.151.63.86:8008",
     "https://103.151.63.86:8008",
+    "https://iet-polinela.github.io",
 ]
 
 # =====================
